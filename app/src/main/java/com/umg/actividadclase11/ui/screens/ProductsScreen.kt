@@ -13,10 +13,11 @@ import com.umg.actividadclase11.ui.viewmodel.ProductViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
+
 @Composable
 fun ProductsScreen(
     vm: ProductViewModel,
-    modifier: Modifier = Modifier  // <-- agregado
+    modifier: Modifier = Modifier
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
@@ -25,7 +26,7 @@ fun ProductsScreen(
     var price by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
 
-    Column(modifier = modifier.padding(16.dp)) {  // <-- usamos el modifier pasado
+    Column(modifier = modifier.padding(16.dp)) {
 
         // Barra de búsqueda
         OutlinedTextField(
@@ -37,9 +38,7 @@ fun ProductsScreen(
         Button(
             onClick = { vm.searchByName(searchText) },
             modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text("Buscar")
-        }
+        ) { Text("Buscar") }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -69,7 +68,7 @@ fun ProductsScreen(
                     vm.create(
                         ProductRequest(
                             name = name,
-                            price = price.toDouble(),
+                            price = price.toDoubleOrNull() ?: 0.0,
                             category = category.ifBlank { null }
                         )
                     )
@@ -79,9 +78,7 @@ fun ProductsScreen(
                 }
             },
             modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text("Crear")
-        }
+        ) { Text("Crear") }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -106,20 +103,14 @@ fun ProductsScreen(
                         }
 
                         Row {
-                            Button(
-                                onClick = {
-                                    val updatedPrice = product.price + 1.0
-                                    vm.update(
-                                        product.id!!,
-                                        ProductRequest(product.name, updatedPrice, product.category)
-                                    )
-                                }
-                            ) {
-                                Text("+1.00")
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = { vm.delete(product.id!!) }) {
-                                Text("Eliminar")
+                            product.id?.let { id ->
+                                Button(onClick = {
+                                    vm.update(id, ProductRequest(product.name, product.price + 1.0, product.category))
+                                }) { Text("+1.00") }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Button(onClick = { vm.delete(id) }) { Text("Eliminar") }
                             }
                         }
                     }
@@ -128,11 +119,9 @@ fun ProductsScreen(
         }
     }
 
-    // Mensajes de estado
+    // Mensajes de error o info
     uiState.message?.let { msg ->
-        LaunchedEffect(msg) {
-            println("Mensaje: $msg") // aquí podrías usar Snackbar en lugar de println
-        }
+        LaunchedEffect(msg) { println("Mensaje: $msg") }
     }
 }
 

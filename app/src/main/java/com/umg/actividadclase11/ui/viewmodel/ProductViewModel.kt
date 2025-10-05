@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProductViewModel(private val repository: ProductRepository) : ViewModel() {
+class ProductViewModel : ViewModel() {
+
+    // Crear internamente el repositorio
+    private val repository = ProductRepository()
 
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState
@@ -46,7 +49,7 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
     fun create(product: ProductRequest) {
         viewModelScope.launch {
             runCatching { repository.create(product) }
-                .onSuccess { loadAll() } // refresca la lista
+                .onSuccess { loadAll() }
                 .onFailure { e -> _uiState.update { it.copy(message = e.message) } }
         }
     }
